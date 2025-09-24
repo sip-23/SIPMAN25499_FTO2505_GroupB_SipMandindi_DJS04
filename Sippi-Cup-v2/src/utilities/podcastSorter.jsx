@@ -6,19 +6,21 @@ import { useState } from "react";
  * @component
  */
 const Sorter = ({ onSortChange }) => {
-    const [sortOrder, setSortOrder] = useState('desc');
+    const [sortCriteria, setSortCriteria] = useState('desc');
 
     // Sort options configuration
     const sortOptions = [
-        { value: 'desc', label: 'Newest: Recently updated' },
-        { value: 'asc', label: 'Oldest: GrandPa & GrandMa' }
+        { value: 'recent', label: 'Newest: Recently updated' },
+        { value: 'oldest', label: 'Oldest: GrandPa & GrandMa' },
+        { value: 'title', label: 'A - Z: Alphabetical order' },
+        { value: 'seasons', label: '# Seasons: Number of seasons' }
     ];
 
     // Handle sort order change
     const handleSortChange = (event) => {
-        const order = event.target.value;
-        setSortOrder(order);
-        onSortChange(order);
+        const criteria = event.target.value;
+        setSortCriteria(criteria);
+        onSortChange(criteria);
     };
 
     return (
@@ -26,8 +28,8 @@ const Sorter = ({ onSortChange }) => {
             <h4 className="font-medium text-[#fff] text-[15px]">Sort by:</h4>
             <div className="flex items-center relative">
                 <select 
-                    id="updated-filter"
-                    value={sortOrder}
+                    id="podcast-sorter"
+                    value={sortCriteria}
                     onChange={handleSortChange}
                     className="w-full px-2 py-2 font-plus-jakarta-sans border text-[13px] font-medium border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-600 text-[#000112] [&>option:checked]:text-black"
                 >

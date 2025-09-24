@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import Header from "./Header";
 import PodcastGrid from "../views/renderGrid";
 import PodcastModal from "./podcastModal";
 import LoadingSpinner from "../utilities/loadingSpinner";
@@ -23,29 +24,60 @@ const Home = () => {
         error 
     } = useFetchPodcasts(podcastsUrl);
 
-    // State for filtering and sorting
+    // State for filtering and sorting and searching
     const [selectedGenre, setSelectedGenre] = useState('all');
-    const [sortOrder, setSortOrder] = useState('desc');
+    const [sortCriteria, setSortCriteria] = useState('recent');
+    const [searchTerm, setSearchTerm] = useState('');
 
-    // Filter and sort podcasts
+    // Filter, seach and sort podcasts
     const filteredAndSortedPodcasts = useMemo(() => {
         if (!allPodcasts || allPodcasts.length === 0) return [];
 
-        // Filter by genre
-        let filteredPodcasts = allPodcasts;
+        // Defining variable for Podcasts to be processed
+        let processedPodcasts = allPodcasts;
+
+        // Search
+        if (searchTerm) {
+            processedPodcasts = processedPodcasts.filter(podcast =>
+                podcast.title && podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Filter
         if (selectedGenre !== 'all') {
-            filteredPodcasts = allPodcasts.filter(podcast => 
+            processedPodcasts = processedPodcasts.filter(podcast => 
                 podcast.genres && podcast.genres.includes(parseInt(selectedGenre))
             );
         }
 
-        // Sort by date
-        return [...filteredPodcasts].sort((a, b) => {
-            const dateA = new Date(a.updated || 0);
-            const dateB = new Date(b.updated || 0);
-            return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-        });
-    }, [allPodcasts, selectedGenre, sortOrder]);
+        // Sort
+        const sortedPodcasts = [...processedPodcasts];
+
+        switch (sortCriteria) {
+            case 'title':
+                sortedPodcasts.sort((a, b) => a.title.localeCompare(b.title));
+                break;
+            case 'recent':
+                sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+                break;
+            case 'oldest':
+                sortedPodcasts.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+                break;
+            case 'seasons':
+                // Handle podcasts with no seasons property
+                sortedPodcasts.sort((a, b) => {
+                    const seasonsA = a.seasons || 0;
+                    const seasonsB = b.seasons || 0;
+                    return seasonsB - seasonsA; // Descending order (most seasons first)
+                });
+                break;
+            default:
+                // Default to recent sorting
+                sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+        }
+
+        return sortedPodcasts;
+    }, [allPodcasts, selectedGenre, sortCriteria, searchTerm]);
 
     // State for modal
     const [selectedPodcastId, setSelectedPodcastId] = useState(null);
@@ -68,8 +100,12 @@ const Home = () => {
         setSelectedGenre(genreId);
     };
 
-    const handleSortChange = (order) => {
-        setSortOrder(order);
+    const handleSearch = (term) => {
+        setSearchTerm(term);
+    };
+
+    const handleSortChange = (criteria) => {
+        setSortCriteria(criteria);
     };
 
 
@@ -83,43 +119,71 @@ const Home = () => {
     
     
     return (
-        <div className="text-white px-12 py-6 flex  w-full gap-5">
-            {/* Error Display */}
-            {error && (
-                <ErrorDisplay 
-                message={`Failed to load podcasts: ${error}`}
-                />
-            )}
+        <>
+            {/* Header */}
+            <Header onSearch={handleSearch} />
 
-            {/* Podcast Modal */}
-            <PodcastModal 
-                podcastId={selectedPodcastId}
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                allPodcasts={allPodcasts}
-            />
-        
-            <div className="w-full flex flex-col gap-8">
-                {/* Render error or grid for all podcasts */}
-                {allPodcasts && allPodcasts.length > 0 ? (
-                    <div>
-                        <h2 className="font-bold text-2xl mb-2">All Podcasts</h2>
-
-                        <div className="flex flex-col mb-4 md:flex-row md:items-center md:justify-start md:gap-3 md:mb-12">
-                            <GenreFilter onGenreChange={handleGenreChange} />
-                            <Sorter onSortChange={handleSortChange} />
-                        </div>
-
-                        <PodcastGrid 
-                            podcasts={filteredAndSortedPodcasts} 
-                            onPodcastSelect={handlePodcastSelect}
-                        />
-                    </div>
-                ) : (
-                    <p className="text-gray-400">No podcasts found</p>
+            <div className="text-white px-12 py-6 flex  w-full gap-5">
+                {/* Error Display */}
+                {error && (
+                    <ErrorDisplay 
+                    message={`Failed to load podcasts: ${error}`}
+                    />
                 )}
+
+                {/* Podcast Modal */}
+                <PodcastModal 
+                    podcastId={selectedPodcastId}
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    allPodcasts={allPodcasts}
+                />
+            
+                <div className="w-full flex flex-col gap-8">
+                    {/* Render error or grid for all podcasts */}
+                    {allPodcasts && allPodcasts.length > 0 ? (
+                        <div>
+                            <h2 className="font-bold text-2xl mb-2">
+                                {searchTerm ? `Search Results for "${searchTerm}"` : 'Podcasts'}
+                                    {filteredAndSortedPodcasts.length !== allPodcasts.length && (
+                                        <span className="text-gray-400 text-lg ml-2">
+                                            ({filteredAndSortedPodcasts.length} of {allPodcasts.length})
+                                        </span>
+                                    )}
+                            </h2>
+
+                            {/* Drop down filters and sorter */}
+                            <div className="flex flex-col mb-4 md:flex-row md:items-center md:justify-start md:gap-3 md:mb-12">
+                                <GenreFilter onGenreChange={handleGenreChange} />
+                                <Sorter onSortChange={handleSortChange} />
+                            </div>
+
+                            {/* Handling empty results */}
+                            {searchTerm && filteredAndSortedPodcasts.length === 0 && (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-400 text-lg">
+                                            No podcasts found matching "<span className="text-white">{searchTerm}</span>"
+                                        </p>
+                                        <button 
+                                            onClick={() => setSearchTerm('')}
+                                            className="mt-2 text-[#9A7B4F] hover:text-[#b3b3b3] transition-colors"
+                                        >
+                                            Clear search
+                                        </button>
+                                    </div>
+                                )}
+
+                            <PodcastGrid 
+                                podcasts={filteredAndSortedPodcasts} 
+                                onPodcastSelect={handlePodcastSelect}
+                            />
+                        </div>
+                    ) : (
+                        <p className="text-gray-400">No podcasts found</p>
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

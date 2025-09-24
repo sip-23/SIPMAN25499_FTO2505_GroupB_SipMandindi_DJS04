@@ -1,5 +1,5 @@
 import { IoBookOutline, IoNotificationsOutline, IoSearchOutline, IoPersonOutline } from "react-icons/io5";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /**
  * Header Component
@@ -7,10 +7,60 @@ import { useState } from "react";
  * A fixed top navigation bar
  * @component
  */
-const Header = () => {
+const Header = ({ onSearch }) => {
     const [searchValue, setSearchValue] = useState("");
+    const searchTimeoutRef = useRef(null);
+    const searchInputRef = useRef(null);
 
     const darkLogo = {id: 2, image: "./src/assets/SippiCupPod Logo Dark NoBG.png", alt: "Dark mode logo"};
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchValue(value);
+
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+        
+        searchTimeoutRef.current = setTimeout(() => {
+            if (onSearch) {
+                onSearch(value.toLowerCase().trim());
+            }
+        }, 300);
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+            
+            // Execute search immediately
+            if (onSearch) {
+                onSearch(searchValue.toLowerCase().trim());
+            }
+        }
+    }
+
+    const clearSearch  = () => {
+        setSearchValue("");
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+        if (onSearch) {
+            onSearch("");
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     return (
         <div className="top-0 left-0 right-0 bg-[#121212] w-full h-fit px-5 py-2 relative flex-1 flex items-center justify-between z-50 border-b border-[#333]">
@@ -28,13 +78,25 @@ const Header = () => {
             {/* Search container */}
             <div className="flex items-center w-[350px] h-10 px-3">
                 <IoSearchOutline color="#b3b3b3" className=" mr-3" size={22}/>
-                <input 
+                <input
+                    ref={searchInputRef} 
                     type="text" 
                     placeholder="Search" 
                     value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
+                    onChange={handleSearchChange}
+                    onKeyDown={handleKeyPress}
                     className="border rounded-md opacity-30 bg-[#121212] w-full py-2 px-4 placeholder:text-[#b3b3b3] text-white hover:border-[#9A7B4F]" 
                 />
+
+                {/* Adding Clear search button */}
+                {searchValue && (
+                    <button 
+                        onClick={clearSearch}
+                        className="ml-2 text-[#b3b3b3] hover:text-white transition-colors"
+                        title="Clear search">
+                        ×
+                    </button>
+                )}
             </div>
             
             {/* Icons container */}
