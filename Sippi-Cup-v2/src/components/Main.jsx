@@ -7,6 +7,7 @@ import ErrorDisplay from "../utilities/loadingError";
 import useFetchPodcasts from "../utilities/fetchPodcasts";
 import GenreFilter from "../utilities/genreFilter";
 import Sorter from "../utilities/podcastSorter";
+import Pagination from "../utilities/pagination";
 
 /**
  * Home Component
@@ -28,6 +29,9 @@ const Home = () => {
     const [selectedGenre, setSelectedGenre] = useState('all');
     const [sortCriteria, setSortCriteria] = useState('recent');
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [postsPerPage, setPostPerPage] = useState(8);
+    
 
     // Filter, seach and sort podcasts
     const filteredAndSortedPodcasts = useMemo(() => {
@@ -79,6 +83,31 @@ const Home = () => {
         return sortedPodcasts;
     }, [allPodcasts, selectedGenre, sortCriteria, searchTerm]);
 
+    // Pagination
+    // Using slice method in js, which cuts array using starting index and last index
+    const paginationData = useMemo(() => {
+        const totalPodcasts = filteredAndSortedPodcasts.length;
+        const totalPages = Math.ceil(totalPodcasts / postsPerPage);
+
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+
+        const lastPodcastIndex = currentPage * postsPerPage;
+        const fistPodcastIndex = lastPodcastIndex - postsPerPage;
+
+        // hiding unwanted cards
+        const currentCards = filteredAndSortedPodcasts.slice(fistPodcastIndex, lastPodcastIndex);
+
+        return {
+            currentCards,
+            totalPages,
+            currentPage: Math.min(currentPage, totalPages || 1),
+            totalPodcasts
+        };
+    }, [filteredAndSortedPodcasts, currentPage, postsPerPage]);
+        
+
     // State for modal
     const [selectedPodcastId, setSelectedPodcastId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,6 +135,17 @@ const Home = () => {
 
     const handleSortChange = (criteria) => {
         setSortCriteria(criteria);
+    };
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        // Automatcally move to the top to top when page changes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const clearSearch = () => {
+        setSearchTerm('');
+        setCurrentPage(1);
     };
 
 
@@ -174,9 +214,21 @@ const Home = () => {
                                 )}
 
                             <PodcastGrid 
-                                podcasts={filteredAndSortedPodcasts} 
+                                podcasts={paginationData.currentCards} 
                                 onPodcastSelect={handlePodcastSelect}
                             />
+
+                            {/* Pagination Component */}
+                            {paginationData.totalPages > 1 && (
+                                <Pagination 
+                                    currentPage={paginationData.currentPage}
+                                    totalPages={paginationData.totalPages}
+                                    totalPosts={paginationData.totalPodcasts}
+                                    postsPerPage={postsPerPage}
+                                    onPageChange={handlePageChange}
+                                />
+                            )}
+
                         </div>
                     ) : (
                         <p className="text-gray-400">No podcasts found</p>
