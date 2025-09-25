@@ -94,11 +94,22 @@ The following is what I have been able to implement
 
 ## Assets / Wireframe references
 
+### Desktop View
 ![Sippi-Cup Podcasts DeskTop](</Snapshots/Desktop_view.png>)
+
+### New Features: (Filter, Search, Sort)
 ![Sippi-Cup Podcasts Functionality](</Snapshots/filter_sort_search.png>)
+
+### Tablet view
 ![Sippi-Cup Podcasts Tablet](</Snapshots/Tablet_view.png>)
+
+### Tablet view with Pagination feature
 ![Sippi-Cup Podcasts Tablet Pagination](</Snapshots/Tablet_pagination.png>)
+
+### Mobile view
 ![Sippi-Cup Podcasts Mobile](</Snapshots/Mobile_view.png>)
+
+### Mobile view with Pagination feature
 ![Sippi-Cup Podcasts Mobile Pagination](</Snapshots/Mobile_pagination.png>)
 
 ---
