@@ -12,7 +12,8 @@ const Sorter = ({ onSortChange }) => {
     const sortOptions = [
         { value: 'recent', label: 'Newest: Recently updated' },
         { value: 'oldest', label: 'Oldest: GrandPa & GrandMa' },
-        { value: 'title', label: 'A - Z: Alphabetical order' },
+        { value: 'title-az', label: 'A - Z: Alphabetical order' },
+        { value: 'title-za', label: 'Z - A: Alphabetical order' },
         { value: 'seasons', label: '# Seasons: Number of seasons' }
     ];
 

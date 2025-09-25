@@ -16,7 +16,7 @@ import Pagination from "../utilities/pagination";
  * @component
  */
 const Home = () => {
-    const [podcastsUrl] = useState("https://podcast-api.netlify.app/shows");
+    const [podcastsUrl] = useState("https://podcast-api.netlify.app");
   
     // Fetch all podcasts
     const { 
@@ -58,8 +58,12 @@ const Home = () => {
         const sortedPodcasts = [...processedPodcasts];
 
         switch (sortCriteria) {
-            case 'title':
+            case 'title-az':
                 sortedPodcasts.sort((a, b) => a.title.localeCompare(b.title));
+                break;
+            case 'title-za':
+                // adding Reverse alphabetical order
+                sortedPodcasts.sort((a, b) => b.title.localeCompare(a.title));
                 break;
             case 'recent':
                 sortedPodcasts.sort((a, b) => new Date(b.updated) - new Date(a.updated));
@@ -127,14 +131,17 @@ const Home = () => {
 
     const handleGenreChange = (genreId) => {
         setSelectedGenre(genreId);
+        setCurrentPage(1);
     };
 
     const handleSearch = (term) => {
         setSearchTerm(term);
+        setCurrentPage(1);
     };
 
     const handleSortChange = (criteria) => {
         setSortCriteria(criteria);
+        setCurrentPage(1);
     };
 
     const handlePageChange = (pageNumber) => {

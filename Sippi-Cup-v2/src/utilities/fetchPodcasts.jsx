@@ -6,9 +6,9 @@ import { useState, useEffect } from 'react';
  * @function useFetchPodcasts
  * @param {string} apiUrl - The API URL from which to fetch podcast data.
  * @returns {Object} - An object containing:
- *   @property {Array} data - The fetched podcast data.
- *   @property {boolean} isLoading - Loading state indicator.
- *   @property {string|null} error - Error message if the fetch fails.
+ * @property {Array} data - The fetched podcast data.
+ * @property {boolean} isLoading - Loading state indicator.
+ * @property {string|null} error - Error message if the fetch fails.
  */
 const useFetchPodcasts = (apiUrl) => {
   const [data, setData] = useState([]);
